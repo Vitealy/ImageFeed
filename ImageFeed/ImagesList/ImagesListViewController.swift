@@ -25,6 +25,10 @@ final class ImagesListViewController: UIViewController {
         tableView.separatorStyle = .none
     }
     
+}
+
+extension ImagesListViewController {
+    
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         
         let imageName = photosName[indexPath.row]
