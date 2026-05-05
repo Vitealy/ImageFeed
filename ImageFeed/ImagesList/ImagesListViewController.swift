@@ -2,9 +2,11 @@ import UIKit
 
 final class ImagesListViewController: UIViewController {
     
-    @IBOutlet private var tableView: UITableView!
+    // MARK: - IBOutlets
+    @IBOutlet private weak var tableView: UITableView!
     
-    private let photosName: [String] = Array(0..<20).map{ "\($0)"}
+    // MARK: - Properties
+    private let photoNames: [String] = Array(0..<20).map{ "\($0)"}
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -13,25 +15,27 @@ final class ImagesListViewController: UIViewController {
         return formatter
     }()
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupTableView()
     }
     
+    // MARK: - Setup UI
     private func setupTableView() {
-        tableView.rowHeight = 200
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
         tableView.separatorStyle = .none
     }
     
 }
 
-extension ImagesListViewController {
+// MARK: - Private Methods
+private extension ImagesListViewController {
     
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         
-        let imageName = photosName[indexPath.row]
+        let imageName = photoNames[indexPath.row]
         
         guard let image = UIImage(named: imageName) else {
             print("Ошибка: не удалось загрузить изображение с именем \(imageName)")
@@ -40,12 +44,11 @@ extension ImagesListViewController {
         
         cell.cellImage.image = image
         
-        let currentDate = Date()
-        cell.dateLabel.text = dateFormatter.string(from: currentDate)
+        cell.dateLabel.text = dateFormatter.string(from: Date())
         
-        let isEven = indexPath.row % 2 == 0
+        let isLiked = indexPath.row % 2 == 0
         
-        if isEven {
+        if isLiked {
             let likeImage = UIImage(named: "like_button_on")
             cell.likeButton.setImage(likeImage, for: .normal)
         } else {
@@ -91,6 +94,7 @@ extension ImagesListViewController {
     }
 }
 
+// MARK: - UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -99,7 +103,7 @@ extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
-        guard let image = UIImage(named: photosName[indexPath.row]) else {
+        guard let image = UIImage(named: photoNames[indexPath.row]) else {
             return 0
         }
         
@@ -112,10 +116,11 @@ extension ImagesListViewController: UITableViewDelegate {
     }
 }
 
+// MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photosName.count
+        return photoNames.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
