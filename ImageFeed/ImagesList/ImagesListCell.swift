@@ -29,9 +29,8 @@ final class ImagesListCell: UITableViewCell {
         // Создаем градиентный слой
         let gradient = CAGradientLayer()
         gradient.colors = [
-            UIColor(white: 0.15, alpha: 0.20).cgColor,
-            UIColor(white: 0.15, alpha: 0.15).cgColor,
-            UIColor.clear.cgColor
+           // UIColor(red: 0.102, green: 0.106, blue: 0.133, alpha: 0.7).cgColor,
+            UIColor(red: 0.102, green: 0.106, blue: 0.133, alpha: 0.0).cgColor
         ]
         gradient.startPoint = CGPoint(x: 0.5, y: 0.0)  // начинаем сверху
         gradient.endPoint = CGPoint(x: 0.5, y: 1.0)    // заканчиваем снизу
