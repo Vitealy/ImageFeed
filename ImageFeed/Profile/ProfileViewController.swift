@@ -2,12 +2,12 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
     
-    @IBOutlet private weak var avatarImageView: UIImageView!
-    @IBOutlet private weak var nameLabel: UILabel!
-    @IBOutlet private weak var loginNameLabel: UILabel!
-    @IBOutlet private weak var descriptionLabel: UILabel!
+    @IBOutlet private var avatarImageView: UIImageView!
+    @IBOutlet private var nameLabel: UILabel!
+    @IBOutlet private var loginNameLabel: UILabel!
+    @IBOutlet private var descriptionLabel: UILabel!
     
-    @IBOutlet private weak var loginButton: UIButton!
+    @IBOutlet private var logoutButton: UIButton!
     
     @IBAction private func didTapLogoutButton() {
         
