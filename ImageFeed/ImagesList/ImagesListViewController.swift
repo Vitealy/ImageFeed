@@ -32,7 +32,7 @@ final class ImagesListViewController: UIViewController {
                 assertionFailure("Invalid segue destination")
                 return
             }
-
+            
             let image = UIImage(named: photoNames[indexPath.row])
             viewController.image = image
         } else {
@@ -134,7 +134,6 @@ extension ImagesListViewController: UITableViewDelegate {
         return cellHeight
     }
     
-    
 }
 
 // MARK: - UITableViewDataSource
@@ -154,6 +153,5 @@ extension ImagesListViewController: UITableViewDataSource {
         
         return cell
     }
-    
     
 }
