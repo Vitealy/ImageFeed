@@ -89,7 +89,7 @@
                             <constraint firstItem="Vaz-V8-oqh" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="oBu-Hf-u2t"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Item" image="tab_editorial_active" id="IsP-pr-Kmd"/>
+                    <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="IsP-pr-Kmd"/>
                     <navigationItem key="navigationItem" id="wZ7-49-U2B"/>
                     <connections>
                         <outlet property="tableView" destination="Vaz-V8-oqh" id="VBD-J9-v2V"/>
@@ -112,7 +112,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="0" translatesAutoresizingMaskIntoConstraints="NO" id="WKR-pg-Sw5">
-                                        <rect key="frame" x="20" y="20" width="393" height="852"/>
+                                        <rect key="frame" x="0.0" y="49" width="393" height="783"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                 </subviews>
