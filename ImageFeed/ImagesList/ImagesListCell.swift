@@ -9,6 +9,7 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet weak var dateLabel: UILabel!
     
     // Градиентный слой для подложки даты
+    private var gradientView: UIView?
     private var gradientLayer: CAGradientLayer?
     
     override func awakeFromNib() {
@@ -18,41 +19,58 @@ final class ImagesListCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        // Обновляем frame градиента при изменении размеров
         updateGradientFrame()
     }
     
     private func setupDateGradient() {
-        // Настраиваем фон label как прозрачный
+        
         dateLabel.backgroundColor = .clear
+        
+        // Удаляем старый gradientView, если был
+        gradientView?.removeFromSuperview()
+        
+        let gradientView = UIView()
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        gradientView.backgroundColor = .clear
+        contentView.addSubview(gradientView)
+        
+        NSLayoutConstraint.activate([
+            gradientView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            gradientView.heightAnchor.constraint(equalToConstant: 30)
+        ])
         
         // Создаем градиентный слой
         let gradient = CAGradientLayer()
+        
         gradient.colors = [
-            UIColor(white: 0.15, alpha: 0.20).cgColor,
-            UIColor(white: 0.15, alpha: 0.15).cgColor,
-            UIColor.clear.cgColor
+            UIColor(red: 0.102, green: 0.106, blue: 0.133, alpha: 0.7).cgColor,  // #1A1B22 с прозрачностью 70% (сверху)
+            UIColor(red: 0.102, green: 0.106, blue: 0.133, alpha: 0.0).cgColor   // #1A1B22 полностью прозрачный (снизу)
         ]
+        
         gradient.startPoint = CGPoint(x: 0.5, y: 0.0)  // начинаем сверху
         gradient.endPoint = CGPoint(x: 0.5, y: 1.0)    // заканчиваем снизу
-        gradient.frame = dateLabel.bounds
-       
+        gradient.frame = gradientView.bounds
+        
         gradient.cornerRadius = 4
         
-        // Вставляем градиент за текстом, но поверх изображения
-        dateLabel.layer.insertSublayer(gradient, at: 0)
-        gradientLayer = gradient
+        gradientView.layer.insertSublayer(gradient, at: 0)
+        
+        contentView.sendSubviewToBack(gradientView)
+        contentView.bringSubviewToFront(dateLabel)
+        self.gradientView = gradientView
+        self.gradientLayer = gradient
     }
     
     private func updateGradientFrame() {
-        // Градиент должен занимать всю область label
-        gradientLayer?.frame = dateLabel.bounds
+        gradientLayer?.frame = gradientView?.bounds ?? .zero
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        // Сбрасываем градиент при переиспользовании ячейки
         gradientLayer?.removeFromSuperlayer()
+        gradientView?.removeFromSuperview()
         setupDateGradient()
     }
 }
