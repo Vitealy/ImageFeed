@@ -109,14 +109,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" minimumZoomScale="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="SVw-mI-20D">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="SVw-mI-20D">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="0" translatesAutoresizingMaskIntoConstraints="NO" id="WKR-pg-Sw5">
-                                        <rect key="frame" x="0.0" y="49" width="393" height="783"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="0" translatesAutoresizingMaskIntoConstraints="NO" id="WKR-pg-Sw5">
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                     </imageView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstItem="WKR-pg-Sw5" firstAttribute="top" secondItem="SVw-mI-20D" secondAttribute="top" id="4Yj-ne-CzN"/>
+                                    <constraint firstAttribute="trailing" secondItem="WKR-pg-Sw5" secondAttribute="trailing" id="O7f-IN-zqM"/>
+                                    <constraint firstItem="WKR-pg-Sw5" firstAttribute="leading" secondItem="SVw-mI-20D" secondAttribute="leading" id="Sj6-bs-nYy"/>
+                                    <constraint firstAttribute="bottom" secondItem="WKR-pg-Sw5" secondAttribute="bottom" id="afY-H4-6iL"/>
+                                </constraints>
                                 <viewLayoutGuide key="contentLayoutGuide" id="VjB-YD-3Dj"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="yLa-n5-Ugp"/>
                                 <connections>
@@ -151,12 +156,12 @@
                         <viewLayoutGuide key="safeArea" id="a4H-tw-XQW"/>
                         <color key="backgroundColor" name="YP Black"/>
                         <constraints>
-                            <constraint firstItem="SVw-mI-20D" firstAttribute="leading" secondItem="a4H-tw-XQW" secondAttribute="leading" id="91a-mm-y0J"/>
-                            <constraint firstItem="a4H-tw-XQW" firstAttribute="trailing" secondItem="SVw-mI-20D" secondAttribute="trailing" id="KMi-um-cEl"/>
-                            <constraint firstItem="SVw-mI-20D" firstAttribute="top" secondItem="Lxn-pT-x6R" secondAttribute="top" id="NjV-hy-io5"/>
-                            <constraint firstAttribute="bottom" secondItem="SVw-mI-20D" secondAttribute="bottom" id="YX0-8i-EMQ"/>
+                            <constraint firstItem="SVw-mI-20D" firstAttribute="top" secondItem="Lxn-pT-x6R" secondAttribute="top" id="Vvw-q9-u2t"/>
                             <constraint firstItem="Iud-6g-a5g" firstAttribute="centerX" secondItem="a4H-tw-XQW" secondAttribute="centerX" id="cEF-1V-jEE"/>
                             <constraint firstItem="a4H-tw-XQW" firstAttribute="bottom" secondItem="Iud-6g-a5g" secondAttribute="bottom" constant="17" id="lAU-aK-bM7"/>
+                            <constraint firstItem="SVw-mI-20D" firstAttribute="trailing" secondItem="a4H-tw-XQW" secondAttribute="trailing" id="rlo-FH-CzW"/>
+                            <constraint firstItem="SVw-mI-20D" firstAttribute="leading" secondItem="a4H-tw-XQW" secondAttribute="leading" id="ryb-gM-xNL"/>
+                            <constraint firstAttribute="bottom" secondItem="SVw-mI-20D" secondAttribute="bottom" id="t6X-nG-shV"/>
                             <constraint firstItem="6KK-jA-924" firstAttribute="leading" secondItem="a4H-tw-XQW" secondAttribute="leading" constant="8" id="ttM-td-abo"/>
                             <constraint firstItem="6KK-jA-924" firstAttribute="top" secondItem="a4H-tw-XQW" secondAttribute="top" constant="8" id="zX7-Vb-nmy"/>
                         </constraints>
