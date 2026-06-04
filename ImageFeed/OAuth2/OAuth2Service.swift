@@ -96,8 +96,8 @@ final class OAuth2Service {
             // Декодируем ответ
             do {
                 guard let self = self else {
-                        throw NetworkError.invalidRequest
-                    }
+                    throw NetworkError.invalidRequest
+                }
                 let token = try self.decodeTokenResponse(data: data)
                 print("✅ [OAuth2Service] Токен успешно получен и декодирован")
                 
