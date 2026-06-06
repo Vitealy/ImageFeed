@@ -1,4 +1,5 @@
 import UIKit
+import ProgressHUD
 
 // MARK: - Delegate Protocol
 protocol AuthViewControllerDelegate: AnyObject {
@@ -36,7 +37,11 @@ extension AuthViewController: WebViewViewControllerDelegate {
         
         vc.dismiss(animated: true)
         
+        // Показываем индикатор загрузки
+        ProgressHUD.animate()
+        
         oauth2Service.fetchOAuthToken(code) { result in
+            ProgressHUD.dismiss()
             
             switch result {
             case .success(let token):
