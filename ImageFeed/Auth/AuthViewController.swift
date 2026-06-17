@@ -38,10 +38,11 @@ extension AuthViewController: WebViewViewControllerDelegate {
         vc.dismiss(animated: true)
         
         // Показываем индикатор загрузки
-        ProgressHUD.animate()
+        UIBlockingProgressHUD.show()
         
         oauth2Service.fetchOAuthToken(code) { result in
-            ProgressHUD.dismiss()
+            // Скрываем индикатор загрузки
+            UIBlockingProgressHUD.dismiss()
             
             switch result {
             case .success(let token):

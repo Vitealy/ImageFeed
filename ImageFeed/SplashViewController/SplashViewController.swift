@@ -54,6 +54,7 @@ final class SplashViewController: UIViewController {
             guard let windowScene = UIApplication.shared.connectedScenes
                 .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else {
                 assertionFailure("❌ [SplashViewController] Не удалось найти активную UIWindowScene")
+                showErrorAlert(message: "Не удалось перейти на главный экран")
                 return
             }
             window = windowScene.windows.first
@@ -61,6 +62,7 @@ final class SplashViewController: UIViewController {
         
         guard let window = window else {
             assertionFailure("❌ [SplashViewController] Не удалось получить окно для смены rootViewController. Проверьте конфигурацию окон приложения.")
+            showErrorAlert(message: "Не удалось перейти на главный экран")
             return
         }
         
@@ -74,6 +76,11 @@ final class SplashViewController: UIViewController {
         })
     }
     
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
 }
 
 // MARK: - AuthViewControllerDelegate
