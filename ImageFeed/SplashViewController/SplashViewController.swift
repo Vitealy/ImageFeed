@@ -5,6 +5,7 @@ final class SplashViewController: UIViewController {
     private let showAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
     
     private let storage = OAuth2TokenStorage()
+    private let profileService = ProfileService.shared
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -18,9 +19,9 @@ final class SplashViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if storage.token != nil {
-            print("✅ [SplashViewController] Токен найден, переход в галерею")
-            switchToTabBarController()
+        if let token = storage.token {
+            print("✅ [SplashViewController] Токен найден, загружаем профиль...")
+            fetchProfile(token: token)
         } else {
             print("🔄 [SplashViewController] Токен не найден, переход на экран авторизации")
             performSegue(withIdentifier: showAuthenticationScreenSegueIdentifier, sender: nil)
@@ -47,6 +48,27 @@ final class SplashViewController: UIViewController {
     }
     
     // MARK: - Private Methods
+    
+    private func fetchProfile(token: String) {
+        UIBlockingProgressHUD.show()
+        
+        profileService.fetchProfile(token) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let profile):
+                print("✅ [SplashViewController] Профиль успешно загружен: \(profile.name)")
+                self.switchToTabBarController()
+                
+            case .failure(let error):
+                print("❌ [SplashViewController] Ошибка загрузки профиля: \(error.localizedDescription)")
+                self.showErrorAlert(message: "Не удалось загрузить профиль. Проверьте подключение к интернету.")
+            }
+        }
+    }
+    
     private func switchToTabBarController() {
         var window: UIWindow? = view.window
         
@@ -77,8 +99,20 @@ final class SplashViewController: UIViewController {
     }
     
     private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            if let token = self.storage.token {
+                self.fetchProfile(token: token)
+            } else {
+                self.performSegue(withIdentifier: self.showAuthenticationScreenSegueIdentifier, sender: nil)
+            }
+        })
         present(alert, animated: true)
     }
 }
@@ -86,12 +120,16 @@ final class SplashViewController: UIViewController {
 // MARK: - AuthViewControllerDelegate
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ vc: AuthViewController) {
-        print("✅ [SplashViewController] Успешная авторизация, закрываем AuthViewController и переходим в галерею")
+        print("✅ [SplashViewController] Успешная авторизация")
         
         // Закрываем экран авторизации
         vc.dismiss(animated: true) { [weak self] in
-            // После закрытия переходим в галерею
-            self?.switchToTabBarController()
+            guard let self = self else { return }
+            guard let token = self.storage.token else {
+                print("❌ [SplashViewController] Токен не найден после авторизации")
+                return
+            }
+            self.fetchProfile(token: token)
         }
     }
 }

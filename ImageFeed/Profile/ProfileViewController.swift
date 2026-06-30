@@ -13,7 +13,6 @@ final class ProfileViewController: UIViewController {
     // MARK: - Properties
     
     private let profileService = ProfileService.shared
-    private let tokenStorage = OAuth2TokenStorage()
     
     // MARK: - Lifecycle
     
@@ -21,15 +20,21 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .ypBlack
         setupProfileElements()
-        loadProfile()
+        updateUIWithSavedProfile()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateUIWithSavedProfile()
+    }
+    
+    // MARK: - Setup UI
     private func setupProfileElements() {
         
         // MARK: - Avatar image
         
         profileImageView = UIImageView()
-        profileImageView = UIImageView(image: UIImage(named: "Avatar"))
+        profileImageView = UIImageView(image: UIImage(named: "tab_profile_active"))
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
         profileImageView.contentMode = .scaleAspectFill
         profileImageView.layer.cornerRadius = 35
@@ -106,33 +111,44 @@ final class ProfileViewController: UIViewController {
     }
     
     // MARK: - Private Methods
-    private func loadProfile() {
-        guard let token = tokenStorage.token else {
-            print("❌ [ProfileViewController] Токен не найден")
+    
+    //    private func loadProfile() {
+    //        guard let token = tokenStorage.token else {
+    //            print("❌ [ProfileViewController] Токен не найден")
+    //            return
+    //        }
+    //
+    //        print("🔄 [ProfileViewController] Начинаем загрузку профиля...")
+    //
+    //        profileService.fetchProfile(token) { [weak self] result in
+    //            guard let self = self else { return }
+    //
+    //            switch result {
+    //            case .success(let profile):
+    //                print("✅ [ProfileViewController] Профиль успешно загружен")
+    //                self.updateUI(with: profile)
+    //
+    //            case .failure(let error):
+    //                print("❌ [ProfileViewController] Ошибка загрузки профиля: \(error.localizedDescription)")
+    //                self.showErrorAlert(message: "Не удалось загрузить профиль")
+    //            }
+    //        }
+    //    }
+    
+    private func updateUIWithSavedProfile() {
+        guard let profile = profileService.profile else {
+            print("ℹ️ [ProfileViewController] Профиль ещё не загружен")
             return
         }
         
-        print("🔄 [ProfileViewController] Начинаем загрузку профиля...")
-        
-        profileService.fetchProfile(token) { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let profile):
-                print("✅ [ProfileViewController] Профиль успешно загружен")
-                self.updateUI(with: profile)
-                
-            case .failure(let error):
-                print("❌ [ProfileViewController] Ошибка загрузки профиля: \(error.localizedDescription)")
-                self.showErrorAlert(message: "Не удалось загрузить профиль")
-            }
-        }
+        updateUI(with: profile)
     }
     
+    
     private func updateUI(with profile: Profile) {
-        guard let nameLabel = nameLabel,
-              let loginNameLabel = loginNameLabel,
-              let descriptionLabel = descriptionLabel else {
+        guard nameLabel != nil,
+              loginNameLabel != nil,
+              descriptionLabel != nil else {
             print("❌ [ProfileViewController] UI-элементы не инициализированы")
             return
         }
