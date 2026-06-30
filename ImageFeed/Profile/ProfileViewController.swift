@@ -112,29 +112,6 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - Private Methods
     
-    //    private func loadProfile() {
-    //        guard let token = tokenStorage.token else {
-    //            print("❌ [ProfileViewController] Токен не найден")
-    //            return
-    //        }
-    //
-    //        print("🔄 [ProfileViewController] Начинаем загрузку профиля...")
-    //
-    //        profileService.fetchProfile(token) { [weak self] result in
-    //            guard let self = self else { return }
-    //
-    //            switch result {
-    //            case .success(let profile):
-    //                print("✅ [ProfileViewController] Профиль успешно загружен")
-    //                self.updateUI(with: profile)
-    //
-    //            case .failure(let error):
-    //                print("❌ [ProfileViewController] Ошибка загрузки профиля: \(error.localizedDescription)")
-    //                self.showErrorAlert(message: "Не удалось загрузить профиль")
-    //            }
-    //        }
-    //    }
-    
     private func updateUIWithSavedProfile() {
         guard let profile = profileService.profile else {
             print("ℹ️ [ProfileViewController] Профиль ещё не загружен")
@@ -143,7 +120,6 @@ final class ProfileViewController: UIViewController {
         
         updateUI(with: profile)
     }
-    
     
     private func updateUI(with profile: Profile) {
         guard nameLabel != nil,
@@ -158,8 +134,11 @@ final class ProfileViewController: UIViewController {
             self.loginNameLabel.text = profile.loginName
             self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
             
-            if let avatarURL = profile.avatarURL {
+            if let avatarURL = ProfileImageService.shared.avatarURL {
                 self.loadAvatar(from: avatarURL)
+            } else {
+                // fallback на случай, если аватарка ещё не загрузилась
+                self.profileImageView.image = UIImage(named: "tab_profile_active")
             }
         }
     }

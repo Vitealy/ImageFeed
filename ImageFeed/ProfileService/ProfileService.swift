@@ -8,22 +8,13 @@ struct ProfileResult: Codable, Sendable {
     let firstName: String
     let lastName: String?
     let bio: String?
-    let profileImage: ProfileImage?
     
     enum CodingKeys: String, CodingKey {
         case username
         case firstName = "first_name"
         case lastName = "last_name"
         case bio
-        case profileImage = "profile_image"
     }
-}
-
-/// Модель для изображений профиля
-struct ProfileImage: Codable, Sendable {
-    let small: String
-    let medium: String
-    let large: String
 }
 
 /// Модель профиля для UI-слоя
@@ -32,7 +23,6 @@ struct Profile {
     let name: String
     let loginName: String
     let bio: String?
-    let avatarURL: String?
     
     /// Создаёт Profile из ProfileResult
     init(from result: ProfileResult) {
@@ -42,7 +32,6 @@ struct Profile {
             .joined(separator: " ")
         self.loginName = "@\(result.username)"
         self.bio = result.bio
-        self.avatarURL = result.profileImage?.large
     }
 }
 

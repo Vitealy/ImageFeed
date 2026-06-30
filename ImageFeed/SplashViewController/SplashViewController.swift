@@ -6,6 +6,7 @@ final class SplashViewController: UIViewController {
     
     private let storage = OAuth2TokenStorage()
     private let profileService = ProfileService.shared
+    private let profileImageService = ProfileImageService.shared
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -60,7 +61,10 @@ final class SplashViewController: UIViewController {
             switch result {
             case .success(let profile):
                 print("✅ [SplashViewController] Профиль успешно загружен: \(profile.name)")
-                self.switchToTabBarController()
+                self.fetchProfileImage(username: profile.username) {
+                    UIBlockingProgressHUD.dismiss()
+                    self.switchToTabBarController()
+                }
                 
             case .failure(let error):
                 print("❌ [SplashViewController] Ошибка загрузки профиля: \(error.localizedDescription)")
@@ -68,6 +72,19 @@ final class SplashViewController: UIViewController {
             }
         }
     }
+    
+    private func fetchProfileImage(username: String, completion: @escaping () -> Void) {
+            profileImageService.fetchProfileImageURL(username: username) { result in
+                switch result {
+                case .success(let avatarURL):
+                    print("✅ [SplashViewController] Аватарка успешно загружена: \(avatarURL)")
+                case .failure(let error):
+                    print("❌ [SplashViewController] Ошибка загрузки аватарки: \(error.localizedDescription)")
+                    // Не блокируем переход, даже если аватарка не загрузилась
+                }
+                completion()
+            }
+        }
     
     private func switchToTabBarController() {
         var window: UIWindow? = view.window
