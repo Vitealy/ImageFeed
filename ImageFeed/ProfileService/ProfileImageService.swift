@@ -1,10 +1,15 @@
 import Foundation
 
+// MARK: - Constants
+extension ProfileImageService {
+    static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
+}
 
 // MARK: - Models
 
 /// Модель ответа от сервера Unsplash API для получения изображений профиля
-struct UserResult: Codable, @unchecked Sendable {
+
+struct UserResult: Codable, Sendable {
     let profileImage: ProfileImage
     
     enum CodingKeys: String, CodingKey {
@@ -13,7 +18,7 @@ struct UserResult: Codable, @unchecked Sendable {
 }
 
 /// Модель для изображений профиля
-struct ProfileImage: Codable, @unchecked Sendable {
+struct ProfileImage: Codable, Sendable {
     let small: String
     let medium: String
     let large: String
@@ -33,7 +38,7 @@ final class ProfileImageService {
     private let tokenStorage = OAuth2TokenStorage()
     private(set) var avatarURL: String?
     
-    // MARK: - Public Methods
+    // MARK: - Private Methods
     
     /// Создаёт URLRequest для получения аватарки пользователя
     /// - Parameters:
@@ -51,6 +56,13 @@ final class ProfileImageService {
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
+    
+    private func decodeUserResult(from data: Data) throws -> UserResult {
+        let decoder = JSONDecoder()
+        return try decoder.decode(UserResult.self, from: data)
+    }
+    
+    // MARK: - Public Methods
     
     /// Загружает URL аватарки пользователя
     /// - Parameters:
@@ -118,14 +130,24 @@ final class ProfileImageService {
             
             // Декодируем ответ
             do {
-                let decoder = JSONDecoder()
-                let userResult = try decoder.decode(UserResult.self, from: data)
+                guard let self = self else {
+                    throw NetworkError.invalidRequest
+                }
+                
+                let userResult = try self.decodeUserResult(from: data)
                 
                 // Сохраняем URL аватарки
                 let avatarURL = userResult.profileImage.large
-                self?.avatarURL = avatarURL
+                self.avatarURL = avatarURL
                 
                 print("✅ [ProfileImageService] Аватарка успешно получена: \(avatarURL)")
+                
+                // ✅ ОТПРАВЛЯЕМ НОТИФИКАЦИЮ
+                NotificationCenter.default.post(
+                    name: ProfileImageService.didChangeNotification,
+                    object: self,
+                    userInfo: ["URL": avatarURL]
+                )
                 
                 DispatchQueue.main.async {
                     completion(.success(avatarURL))

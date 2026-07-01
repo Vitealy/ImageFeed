@@ -13,6 +13,7 @@ final class ProfileViewController: UIViewController {
     // MARK: - Properties
     
     private let profileService = ProfileService.shared
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     // MARK: - Lifecycle
     
@@ -21,12 +22,31 @@ final class ProfileViewController: UIViewController {
         view.backgroundColor = .ypBlack
         setupProfileElements()
         updateUIWithSavedProfile()
+        
+        // ✅ ПОДПИСЫВАЕМСЯ НА НОТИФИКАЦИЮ
+        profileImageServiceObserver = NotificationCenter.default
+                    .addObserver(
+                        forName: ProfileImageService.didChangeNotification,
+                        object: nil,
+                        queue: .main
+                    ) { [weak self] notification in
+                        guard let self = self else { return }
+                        // Когда приходит нотификация — обновляем аватарку
+                        self.updateAvatar()
+                    }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateUIWithSavedProfile()
     }
+    
+    deinit {
+            // ✅ УДАЛЯЕМ ОБСЕРВЕР ПРИ УНИЧТОЖЕНИИ КОНТРОЛЛЕРА
+            if let observer = profileImageServiceObserver {
+                NotificationCenter.default.removeObserver(observer)
+            }
+        }
     
     // MARK: - Setup UI
     private func setupProfileElements() {
@@ -134,40 +154,31 @@ final class ProfileViewController: UIViewController {
             self.loginNameLabel.text = profile.loginName
             self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
             
-            if let avatarURL = ProfileImageService.shared.avatarURL {
-                self.loadAvatar(from: avatarURL)
-            } else {
-                // fallback на случай, если аватарка ещё не загрузилась
-                self.profileImageView.image = UIImage(named: "tab_profile_active")
-            }
+            // ✅ ОБНОВЛЯЕМ АВАТАРКУ
+            self.updateAvatar()
         }
     }
     
-    private func loadAvatar(from urlString: String) {
-        guard let url = URL(string: urlString) else {
-            print("❌ [ProfileViewController] Невалидный URL аватара")
-            return
+    private func updateAvatar() {
+            guard let avatarURL = ProfileImageService.shared.avatarURL,
+                  let url = URL(string: avatarURL) else {
+                // Если аватарки нет — ставим дефолтную
+                self.profileImageView.image = UIImage(named: "tab_profile_active")
+                return
+            }
+            
+            loadAvatar(from: url)
         }
-        
-        // Загружаем изображение в фоновом потоке
-        DispatchQueue.global().async { [weak self] in
-            if let data = try? Data(contentsOf: url),
-               let image = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self?.profileImageView.image = image
+    
+    private func loadAvatar(from url: URL) {
+            DispatchQueue.global().async { [weak self] in
+                if let data = try? Data(contentsOf: url),
+                   let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        self?.profileImageView.image = image
                 }
             }
         }
-    }
-    
-    private func showErrorAlert(message: String) {
-        let alert = UIAlertController(
-            title: "Ошибка",
-            message: message,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
     
     @objc private func didTapLogoutButton() {
