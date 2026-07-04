@@ -57,11 +57,6 @@ final class ProfileImageService {
         return request
     }
     
-    private func decodeUserResult(from data: Data) throws -> UserResult {
-        let decoder = JSONDecoder()
-        return try decoder.decode(UserResult.self, from: data)
-    }
-    
     // MARK: - Public Methods
     
     /// Загружает URL аватарки пользователя
@@ -90,53 +85,17 @@ final class ProfileImageService {
         
         print("📡 [ProfileImageService] Отправка запроса на получение аватарки для пользователя: \(username)...")
         
-        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
             defer {
                 DispatchQueue.main.async {
                     self?.task = nil
                 }
             }
             
-            // Проверяем ошибку сети
-            if let error = error {
-                print("❌ [ProfileImageService] Сетевая ошибка: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-                return
-            }
+            guard let self = self else { return }
             
-            // Проверяем HTTP статус
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📡 [ProfileImageService] HTTP статус код: \(httpResponse.statusCode)")
-                
-                guard 200..<300 ~= httpResponse.statusCode else {
-                    print("❌ [ProfileImageService] Ошибка сервера: HTTP \(httpResponse.statusCode)")
-                    DispatchQueue.main.async {
-                        completion(.failure(NetworkError.httpStatusCode(httpResponse.statusCode)))
-                    }
-                    return
-                }
-            }
-            
-            // Проверяем наличие данных
-            guard let data = data else {
-                print("❌ [ProfileImageService] Данные не получены")
-                DispatchQueue.main.async {
-                    completion(.failure(NetworkError.noData))
-                }
-                return
-            }
-            
-            // Декодируем ответ
-            do {
-                guard let self = self else {
-                    throw NetworkError.invalidRequest
-                }
-                
-                let userResult = try self.decodeUserResult(from: data)
-                
-                // Сохраняем URL аватарки
+            switch result {
+            case .success(let userResult):
                 let avatarURL = userResult.profileImage.large
                 self.avatarURL = avatarURL
                 
@@ -149,41 +108,15 @@ final class ProfileImageService {
                     userInfo: ["URL": avatarURL]
                 )
                 
-                DispatchQueue.main.async {
-                    completion(.success(avatarURL))
-                }
-            } catch {
-                print("❌ [ProfileImageService] Ошибка декодирования: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+                completion(.success(avatarURL))
+                
+            case .failure(let error):
+                print("❌ [ProfileImageService] Ошибка: \(error.localizedDescription)")
+                completion(.failure(error))
             }
         }
         
         self.task = task
         task.resume()
-    }
-}
-
-// MARK: - Network Error
-extension ProfileImageService {
-    enum NetworkError: Error, LocalizedError {
-        case invalidRequest
-        case unauthorized
-        case httpStatusCode(Int)
-        case noData
-        
-        var errorDescription: String? {
-            switch self {
-            case .invalidRequest:
-                return "Не удалось создать запрос"
-            case .unauthorized:
-                return "Не авторизован"
-            case .httpStatusCode(let code):
-                return "Неверный статус код: \(code)"
-            case .noData:
-                return "Данные не получены"
-            }
-        }
     }
 }

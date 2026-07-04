@@ -30,6 +30,7 @@ struct Profile {
         self.name = [result.firstName, result.lastName]
             .compactMap { $0 }
             .joined(separator: " ")
+            .trimmingCharacters(in: .whitespaces)
         self.loginName = "@\(result.username)"
         self.bio = result.bio
     }
@@ -65,12 +66,6 @@ final class ProfileService {
         return request
     }
     
-    private func decodeProfile(from data: Data) throws -> Profile {
-        let decoder = JSONDecoder()
-        let profileResult = try decoder.decode(ProfileResult.self, from: data)
-        return Profile(from: profileResult)
-    }
-    
     /// Загружает профиль пользователя
     /// - Parameters:
     ///   - token: Bearer токен авторизации
@@ -89,63 +84,25 @@ final class ProfileService {
         
         print("📡 [ProfileService] Отправка запроса на получение профиля...")
         
-        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
             defer {
                 DispatchQueue.main.async {
                     self?.task = nil
                 }
             }
             
-            // Проверяем ошибку сети
-            if let error = error {
-                print("❌ [ProfileService] Сетевая ошибка: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-                return
-            }
+            guard let self = self else { return }
             
-            // Проверяем HTTP статус
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📡 [ProfileService] HTTP статус код: \(httpResponse.statusCode)")
-                
-                guard 200..<300 ~= httpResponse.statusCode else {
-                    print("❌ [ProfileService] Ошибка сервера: HTTP \(httpResponse.statusCode)")
-                    DispatchQueue.main.async {
-                        completion(.failure(NetworkError.httpStatusCode(httpResponse.statusCode)))
-                    }
-                    return
-                }
-            }
-            
-            // Проверяем наличие данных
-            guard let data = data else {
-                print("❌ [ProfileService] Данные не получены")
-                DispatchQueue.main.async {
-                    completion(.failure(NetworkError.noData))
-                }
-                return
-            }
-            
-            // Декодируем ответ
-            do {
-                guard let self = self else {
-                        throw NetworkError.invalidRequest
-                    }
-                    let profile = try self.decodeProfile(from: data)
-
+            switch result {
+            case .success(let profileResult):
+                let profile = Profile(from: profileResult)
                 print("✅ [ProfileService] Профиль успешно получен и декодирован")
-                
                 self.profile = profile
+                completion(.success(profile))
                 
-                DispatchQueue.main.async {
-                    completion(.success(profile))
-                }
-            } catch {
-                print("❌ [ProfileService] Ошибка декодирования: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+            case .failure(let error):
+                print("❌ [ProfileService] Ошибка: \(error.localizedDescription)")
+                completion(.failure(error))
             }
         }
         
@@ -154,22 +111,3 @@ final class ProfileService {
     }
 }
 
-// MARK: - Network Error
-extension ProfileService {
-    enum NetworkError: Error, LocalizedError {
-        case invalidRequest
-        case httpStatusCode(Int)
-        case noData
-        
-        var errorDescription: String? {
-            switch self {
-            case .invalidRequest:
-                return "Не удалось создать запрос"
-            case .httpStatusCode(let code):
-                return "Неверный статус код: \(code)"
-            case .noData:
-                return "Данные не получены"
-            }
-        }
-    }
-}

@@ -1,9 +1,12 @@
 import Foundation
 
 final class OAuth2Service {
+    
+    // MARK: - Singleton
     static let shared = OAuth2Service()
     private init() {}
     
+    // MARK: - Properties
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     private var lastCode: String?
@@ -44,6 +47,7 @@ final class OAuth2Service {
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         assert(Thread.isMainThread) // Проверяем, что мы на главном потоке
+        
         if task != nil {
             if lastCode != code { // Запрос уже выполняется!
                 print("🔄 [OAuth2Service] Новый код, отменяем старый запрос")
@@ -64,110 +68,54 @@ final class OAuth2Service {
         lastCode = code
         
         guard let request = makeOAuthTokenRequest(code: code) else {
-            print("❌ [OAuth2Service] Ошибка: \(AuthServiceError.invalidRequest.localizedDescription)")
-            completion(.failure(AuthServiceError.invalidRequest))
+            print("❌ [OAuth2Service] Ошибка: \(NetworkError.invalidRequest.localizedDescription)")
+            completion(.failure(NetworkError.invalidRequest))
             return
         }
         
-        let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
-            // Очищаем сохранённый код после выполнения запроса
+        print("📡 [OAuth2Service] Отправка запроса на получение токена...")
+        
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
             defer {
                 DispatchQueue.main.async {
                     self?.task = nil
                     self?.lastCode = nil
                 }
-                
             }
             
-            // Проверяем ошибку сети
-            if let error = error {
-                print("❌ [OAuth2Service] Сетевая ошибка: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-                return
-            }
+            guard let self = self else { return }
             
-            // Проверяем HTTP статус
-            if let httpResponse = response as? HTTPURLResponse {
-                print("📡 [OAuth2Service] HTTP статус код: \(httpResponse.statusCode)")
-                
-                guard 200..<300 ~= httpResponse.statusCode else {
-                    // Ошибка, которую вернул сервис Unsplash
-                    let statusCodeError = AuthServiceError.httpStatusCode(httpResponse.statusCode)
-                    print("❌ [OAuth2Service] Ошибка сервера: HTTP \(httpResponse.statusCode)")
-                    DispatchQueue.main.async {
-                        completion(.failure(statusCodeError))
-                    }
-                    return
-                }
-            }
-            
-            // Проверяем наличие данных
-            guard let data = data else {
-                print("❌ [OAuth2Service] Ошибка: \(AuthServiceError.noData.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(AuthServiceError.noData))
-                }
-                return
-            }
-            
-            // Декодируем ответ
-            do {
-                guard let self = self else {
-                    throw AuthServiceError.invalidRequest
-                }
-                let token = try self.decodeTokenResponse(data: data)
+            switch result {
+            case .success(let tokenResponse):
+                let token = tokenResponse.accessToken
                 print("✅ [OAuth2Service] Токен успешно получен и декодирован")
-                
-                // Сохраняем Bearer Token в UserDefaults
                 self.authToken = token
                 print("💾 [OAuth2Service] Токен сохранён в UserDefaults")
+                completion(.success(token))
                 
-                DispatchQueue.main.async {
-                    completion(.success(token))
-                }
-            } catch {
-                print("❌ [OAuth2Service] Ошибка декодирования: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+            case .failure(let error):
+                print("❌ [OAuth2Service] Ошибка: \(error.localizedDescription)")
+                completion(.failure(error))
             }
         }
         
         self.task = task
         task.resume()
     }
-    
-    // MARK: - Private Methods
-    private func decodeTokenResponse(data: Data) throws -> String {
-        let decoder = JSONDecoder()
-        let tokenResponse = try decoder.decode(OAuthTokenResponseBody.self, from: data)
-        return tokenResponse.accessToken
-    }
 }
 
 // MARK: - Network Error
 extension OAuth2Service {
     enum AuthServiceError: Error, LocalizedError {
-        case invalidRequest
         case duplicateRequest
         case invalidState
-        case httpStatusCode(Int)
-        case noData
         
         var errorDescription: String? {
             switch self {
-            case .invalidRequest:
-                return "Не удалось создать запрос"
             case .duplicateRequest:
                 return "Запрос уже выполняется"
             case .invalidState:
                 return "Некорректное состояние"
-            case .httpStatusCode(let code):
-                return "Неверный статус код: \(code)"
-            case .noData:
-                return "Данные не получены"
             }
         }
     }
