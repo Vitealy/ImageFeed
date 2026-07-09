@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -25,15 +26,15 @@ final class ProfileViewController: UIViewController {
         
         // ✅ ПОДПИСЫВАЕМСЯ НА НОТИФИКАЦИЮ
         profileImageServiceObserver = NotificationCenter.default
-                    .addObserver(
-                        forName: ProfileImageService.didChangeNotification,
-                        object: nil,
-                        queue: .main
-                    ) { [weak self] notification in
-                        guard let self = self else { return }
-                        // Когда приходит нотификация — обновляем аватарку
-                        self.updateAvatar()
-                    }
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] notification in
+                guard let self = self else { return }
+                // Когда приходит нотификация — обновляем аватарку
+                self.updateAvatar()
+            }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -42,11 +43,11 @@ final class ProfileViewController: UIViewController {
     }
     
     deinit {
-            // ✅ УДАЛЯЕМ ОБСЕРВЕР ПРИ УНИЧТОЖЕНИИ КОНТРОЛЛЕРА
-            if let observer = profileImageServiceObserver {
-                NotificationCenter.default.removeObserver(observer)
-            }
+        // ✅ УДАЛЯЕМ ОБСЕРВЕР ПРИ УНИЧТОЖЕНИИ КОНТРОЛЛЕРА
+        if let observer = profileImageServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
+    }
     
     // MARK: - Setup UI
     private func setupProfileElements() {
@@ -154,29 +155,37 @@ final class ProfileViewController: UIViewController {
             self.loginNameLabel.text = profile.loginName
             self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
             
-            // ✅ ОБНОВЛЯЕМ АВАТАРКУ
             self.updateAvatar()
         }
     }
     
     private func updateAvatar() {
-            guard let avatarURL = ProfileImageService.shared.avatarURL,
-                  let url = URL(string: avatarURL) else {
-                // Если аватарки нет — ставим дефолтную
-                self.profileImageView.image = UIImage(named: "tab_profile_active")
-                return
-            }
-            
-            loadAvatar(from: url)
+        guard let avatarURL = ProfileImageService.shared.avatarURL,
+              let url = URL(string: avatarURL) else {
+            // Если аватарки нет — ставим дефолтную
+            self.profileImageView.image = UIImage(named: "tab_profile_active")
+            return
         }
+        loadAvatar(from: url)
+    }
     
     private func loadAvatar(from url: URL) {
-            DispatchQueue.global().async { [weak self] in
-                if let data = try? Data(contentsOf: url),
-                   let image = UIImage(data: data) {
-                    DispatchQueue.main.async {
-                        self?.profileImageView.image = image
-                }
+
+        profileImageView.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "tab_profile_active"),
+            options: [
+                .transition(.fade(0.3)),
+                .cacheOriginalImage
+            ]
+        ) { result in
+            switch result {
+            case .success(let value):
+                print("✅ [ProfileViewController] Аватарка загружена: \(value.source.url?.absoluteString ?? "")")
+            case .failure(let error):
+                print("❌ [ProfileViewController] Ошибка загрузки аватарки: \(error.localizedDescription)")
+                // В случае ошибки показываем дефолтную аватарку
+                self.profileImageView.image = UIImage(named: "tab_profile_active")
             }
         }
     }
