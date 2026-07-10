@@ -90,7 +90,7 @@ final class OAuth2Service {
                 let token = tokenResponse.accessToken
                 print("✅ [OAuth2Service] Токен успешно получен и декодирован")
                 self.authToken = token
-                print("💾 [OAuth2Service] Токен сохранён в UserDefaults")
+                print("💾 [OAuth2Service] Токен сохранён в Keychain")
                 completion(.success(token))
                 
             case .failure(let error):
