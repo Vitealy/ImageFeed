@@ -41,10 +41,6 @@ final class ProfileImageService {
     // MARK: - Private Methods
     
     /// Создаёт URLRequest для получения аватарки пользователя
-    /// - Parameters:
-    ///   - username: Имя пользователя
-    ///   - token: Bearer токен авторизации
-    /// - Returns: URLRequest или nil, если не удалось создать
     private func makeProfileImageRequest(username: String, token: String) -> URLRequest? {
         guard let url = URL(string: "\(Constants.defaultBaseURLString)/users/\(username)") else {
             print("❌ [ProfileImageService] Не удалось создать URL")
@@ -60,9 +56,6 @@ final class ProfileImageService {
     // MARK: - Public Methods
     
     /// Загружает URL аватарки пользователя
-    /// - Parameters:
-    ///   - username: Имя пользователя
-    ///   - completion: Замыкание с результатом (String URL или Error)
     func fetchProfileImageURL(username: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         

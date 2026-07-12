@@ -52,8 +52,6 @@ final class ProfileService {
     // MARK: - Public Methods
     
     /// Создаёт URLRequest для получения профиля
-    /// - Parameter token: Bearer токен авторизации
-    /// - Returns: URLRequest или nil, если не удалось создать
     private func makeProfileRequest(token: String) -> URLRequest? {
         guard let url = URL(string: "\(Constants.defaultBaseURLString)/me") else {
             print("❌ [ProfileService] Не удалось создать URL")
@@ -67,9 +65,6 @@ final class ProfileService {
     }
     
     /// Загружает профиль пользователя
-    /// - Parameters:
-    ///   - token: Bearer токен авторизации
-    ///   - completion: Замыкание с результатом (Profile или Error)
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         assert(Thread.isMainThread) // Проверяем, что мы на главном потоке
         
