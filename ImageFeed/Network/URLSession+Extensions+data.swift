@@ -52,13 +52,16 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
+                    print("❌ [URLSession] HTTP ошибка: статус код \(statusCode) для запроса \(request.url?.absoluteString ?? "")")
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
             } else if let error = error {
                 // Ошибка сети
+                print("❌ [URLSession] Сетевая ошибка: \(error.localizedDescription) для запроса \(request.url?.absoluteString ?? "")")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
                 // Неизвестная ошибка
+                print("❌ [URLSession] Неизвестная ошибка: данные и ответ отсутствуют для запроса \(request.url?.absoluteString ?? "")")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
             }
         })

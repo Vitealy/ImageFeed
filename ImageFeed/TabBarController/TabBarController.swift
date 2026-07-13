@@ -2,19 +2,14 @@ import UIKit
 
 final class TabBarController: UITabBarController {
     
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-            super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-            setupViewControllers()
-        }
-        
-        required init?(coder: NSCoder) {
-            super.init(coder: coder)
+    // MARK: - Lifecycle
+    
+    override func viewDidLoad() {
+            super.viewDidLoad()
             setupViewControllers()
         }
     
-    convenience init() {
-            self.init(nibName: nil, bundle: nil)
-        }
+    // MARK: - Private Methods
         
         private func setupViewControllers() {
             let storyboard = UIStoryboard(name: "Main", bundle: .main)

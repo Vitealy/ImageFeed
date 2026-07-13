@@ -47,22 +47,19 @@ final class OAuth2Service {
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         assert(Thread.isMainThread) // Проверяем, что мы на главном потоке
+
+        // ✅ Если уже есть задача с таким же кодом — игнорируем
+        if task != nil && lastCode == code {
+            print("⚠️ [OAuth2Service] Запрос с таким кодом уже выполняется, игнорируем")
+            completion(.failure(AuthServiceError.duplicateRequest))
+            return
+        }
         
-        if task != nil {
-            if lastCode != code { // Запрос уже выполняется!
-                print("🔄 [OAuth2Service] Новый код, отменяем старый запрос")
-                task?.cancel()
-            } else { // Второй запрос не нужен — первый уже в процессе
-                print("⚠️ [OAuth2Service] Запрос с таким кодом уже выполняется, игнорируем")
-                completion(.failure(AuthServiceError.duplicateRequest))
-                return
-            }
-        } else {
-            if lastCode == code { // Запроса нет — проверяем, не сохранили ли мы уже этот код?
-                print("⚠️ [OAuth2Service] Нет активного запроса, но lastCode совпадает")
-                completion(.failure(AuthServiceError.invalidState))
-                return
-            }
+        // ✅ Если пришёл новый код — отменяем старую задачу
+        if task != nil && lastCode != code {
+            print("🔄 [OAuth2Service] Новый код, отменяем старый запрос")
+            task?.cancel()
+            task = nil
         }
         
         lastCode = code
@@ -76,14 +73,15 @@ final class OAuth2Service {
         print("📡 [OAuth2Service] Отправка запроса на получение токена...")
         
         let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
-            defer {
-                DispatchQueue.main.async {
-                    self?.task = nil
-                    self?.lastCode = nil
-                }
-            }
-            
+
             guard let self = self else { return }
+            
+            // ✅ Очищаем состояние ТОЛЬКО если это текущая задача
+            // Проверяем, что код не изменился за время выполнения
+            if self.lastCode == code {
+                self.task = nil
+                self.lastCode = nil
+            }
             
             switch result {
             case .success(let tokenResponse):
@@ -94,8 +92,13 @@ final class OAuth2Service {
                 completion(.success(token))
                 
             case .failure(let error):
-                print("❌ [OAuth2Service] Ошибка: \(error.localizedDescription)")
-                completion(.failure(error))
+                // ✅ Ошибку показываем ТОЛЬКО если это текущая задача
+                if self.lastCode == code {
+                    print("❌ [OAuth2Service] Ошибка: \(error.localizedDescription)")
+                    completion(.failure(error))
+                } else {
+                    print("ℹ️ [OAuth2Service] Игнорируем ошибку устаревшей задачи")
+                }
             }
         }
         
