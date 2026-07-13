@@ -50,8 +50,7 @@ final class OAuth2Service {
 
         // ✅ Если уже есть задача с таким же кодом — игнорируем
         if task != nil && lastCode == code {
-            print("⚠️ [OAuth2Service] Запрос с таким кодом уже выполняется, игнорируем")
-            completion(.failure(AuthServiceError.duplicateRequest))
+            print("⚠️ [OAuth2Service] Запрос с таким кодом уже выполняется, игнорируем повторный вызов")
             return
         }
         
@@ -65,7 +64,7 @@ final class OAuth2Service {
         lastCode = code
         
         guard let request = makeOAuthTokenRequest(code: code) else {
-            print("❌ [OAuth2Service] Ошибка: \(NetworkError.invalidRequest.localizedDescription)")
+            print("❌ [OAuth2Service] Не удалось создать запрос")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -73,14 +72,19 @@ final class OAuth2Service {
         print("📡 [OAuth2Service] Отправка запроса на получение токена...")
         
         let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
-
+            
             guard let self = self else { return }
             
-            // ✅ Очищаем состояние ТОЛЬКО если это текущая задача
-            // Проверяем, что код не изменился за время выполнения
-            if self.lastCode == code {
+            let isCurrentRequest = (self.lastCode == code)
+            
+            if isCurrentRequest {
                 self.task = nil
                 self.lastCode = nil
+            }
+            
+            guard isCurrentRequest else {
+                print("ℹ️ [OAuth2Service] Игнорируем результат устаревшего запроса для кода \(code)")
+                return
             }
             
             switch result {
@@ -92,13 +96,8 @@ final class OAuth2Service {
                 completion(.success(token))
                 
             case .failure(let error):
-                // ✅ Ошибку показываем ТОЛЬКО если это текущая задача
-                if self.lastCode == code {
-                    print("❌ [OAuth2Service] Ошибка: \(error.localizedDescription)")
-                    completion(.failure(error))
-                } else {
-                    print("ℹ️ [OAuth2Service] Игнорируем ошибку устаревшей задачи")
-                }
+                print("❌ [OAuth2Service] Ошибка: \(error.localizedDescription)")
+                completion(.failure(error))
             }
         }
         
