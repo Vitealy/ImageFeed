@@ -150,13 +150,11 @@ final class ProfileViewController: UIViewController {
             return
         }
         
-        DispatchQueue.main.async {
             self.nameLabel.text = profile.name
             self.loginNameLabel.text = profile.loginName
             self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
             
             self.updateAvatar()
-        }
     }
     
     private func updateAvatar() {
@@ -178,14 +176,14 @@ final class ProfileViewController: UIViewController {
                 .transition(.fade(0.3)),
                 .cacheOriginalImage
             ]
-        ) { result in
+        ) { [weak self] result in
             switch result {
             case .success(let value):
                 print("✅ [ProfileViewController] Аватарка загружена: \(value.source.url?.absoluteString ?? "")")
             case .failure(let error):
                 print("❌ [ProfileViewController] Ошибка загрузки аватарки: \(error.localizedDescription)")
                 // В случае ошибки показываем дефолтную аватарку
-                self.profileImageView.image = UIImage(named: "tab_profile_active")
+                self?.profileImageView.image = UIImage(named: "tab_profile_active")
             }
         }
     }
