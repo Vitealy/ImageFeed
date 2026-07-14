@@ -1,4 +1,5 @@
 import UIKit
+import ProgressHUD
 
 // MARK: - Delegate Protocol
 protocol AuthViewControllerDelegate: AnyObject {
@@ -7,7 +8,11 @@ protocol AuthViewControllerDelegate: AnyObject {
 
 // MARK: - AuthViewController
 final class AuthViewController: UIViewController {
+    
+    // MARK: - Constants
     private let showWebViewSegueIdentifier = "ShowWebView"
+    
+    // MARK: - Properties
     private let oauth2Service = OAuth2Service.shared
     private let tokenStorage = OAuth2TokenStorage()
     
@@ -36,7 +41,12 @@ extension AuthViewController: WebViewViewControllerDelegate {
         
         vc.dismiss(animated: true)
         
+        // Показываем индикатор загрузки
+        UIBlockingProgressHUD.show()
+        
         oauth2Service.fetchOAuthToken(code) { result in
+            // Скрываем индикатор загрузки
+            UIBlockingProgressHUD.dismiss()
             
             switch result {
             case .success(let token):
@@ -65,12 +75,44 @@ extension AuthViewController: WebViewViewControllerDelegate {
     }
     
     private func handleAuthError(_ error: Error) {
+        print("❌ [AuthViewController] Ошибка получения токена: \(error.localizedDescription)")
+        
+//        let message: String
+//        if let networkError = error as? NetworkError {
+//            switch networkError {
+//            case .unauthorized:
+//                message = "Неверный логин или пароль. Попробуйте ещё раз."
+//            case .noData:
+//                message = "Сервер не отвечает. Проверьте подключение к интернету."
+//            default:
+//                message = "Не удалось войти в систему. Попробуйте ещё раз."
+//            }
+//        } else {
+//            message = "Не удалось войти в систему. Попробуйте ещё раз."
+//        }
+        
         let alert = UIAlertController(
-            title: "Ошибка авторизации",
-            message: "Не удалось получить токен. Попробуйте ещё раз.\n\(error.localizedDescription)",
+            title: "Что-то пошло не так(",
+            message: "Не удалось войти в систему",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+//        // ✅ Кнопка "Попробовать снова" — повторяет авторизацию
+//        let retryAction = UIAlertAction(title: "Попробовать снова", style: .default) { [weak self] _ in
+//            guard let self = self else { return }
+//            // Открываем WebView снова
+//            self.performSegue(withIdentifier: self.showWebViewSegueIdentifier, sender: nil)
+//        }
+//        
+//        // ✅ Кнопка "Отмена" — возвращает на SplashScreen
+//        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel) { [weak self] _ in
+//            self?.dismiss(animated: true)
+//        }
+//        
+//        alert.addAction(retryAction)
+//        alert.addAction(cancelAction)
+
+        alert.addAction(UIAlertAction(title: "Ок", style: .default))
         present(alert, animated: true)
     }
 }
