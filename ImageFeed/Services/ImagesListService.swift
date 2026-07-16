@@ -1,6 +1,5 @@
 import Foundation
-
-import Foundation
+internal import CoreGraphics
 
 final class ImagesListService {
     
@@ -24,16 +23,16 @@ final class ImagesListService {
     func fetchPhotosNextPage() {
         assert(Thread.isMainThread)
         
-        // 1. Если уже идёт загрузка — прерываем
+        // ✅ Если уже идёт загрузка — прерываем
         if task != nil {
             print("⚠️ [ImagesListService] Загрузка уже идёт, игнорируем повторный вызов")
             return
         }
         
-        // 2. Определяем номер следующей страницы
+        // ✅ Определяем номер следующей страницы
         let nextPage = (lastLoadedPage ?? 0) + 1
         
-        // 3. Создаём запрос
+        // ✅ Создаём запрос
         guard let request = makePhotosRequest(page: nextPage) else {
             print("❌ [ImagesListService] Не удалось создать запрос")
             return
@@ -41,24 +40,26 @@ final class ImagesListService {
         
         print("📡 [ImagesListService] Загрузка страницы \(nextPage)...")
         
-        // 4. Выполняем запрос через objectTask
+        // ✅ Выполняем запрос через objectTask
         let task = urlSession.objectTask(for: request) { [weak self] (result: Result<[PhotoResult], Error>) in
             guard let self = self else { return }
             
-            // Очищаем task после завершения
-            self.task = nil
+            // Очищаем task после завершения (на главном потоке)
+            DispatchQueue.main.async {
+                self.task = nil
+            }
             
             switch result {
             case .success(let photoResults):
                 // Конвертируем PhotoResult → Photo
                 let newPhotos = photoResults.map { self.convertToPhoto(from: $0) }
                 
-                // Обновляем массив и lastLoadedPage на главном потоке
+                // ✅ Обновляем массив и lastLoadedPage на главном потоке
                 DispatchQueue.main.async {
                     self.photos.append(contentsOf: newPhotos)
                     self.lastLoadedPage = nextPage
                     
-                    // Публикуем нотификацию
+                    // ✅ Публикуем нотификацию
                     NotificationCenter.default.post(
                         name: ImagesListService.didChangeNotification,
                         object: self,
@@ -115,14 +116,87 @@ final class ImagesListService {
             isLiked: result.likedByUser
         )
     }
-}
+    
+    // MARK: - Change Like
+    func changeLike(photoId: String, isLiked: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
+        assert(Thread.isMainThread)
+        
+        // Определяем метод: POST (поставить лайк) или DELETE (убрать)
+        let httpMethod = isLiked ? "DELETE" : "POST"
+        
+        guard let request = makeLikeRequest(photoId: photoId, httpMethod: httpMethod) else {
+            print("❌ [ImagesListService] Не удалось создать запрос для изменения лайка")
+            completion(.failure(NetworkError.invalidRequest))
+            return
+        }
+        
+        print("📡 [ImagesListService] \(httpMethod) лайк для фото \(photoId)")
+        
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<PhotoLikeResult, Error>) in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let likeResult):
+                // Обновляем локальный массив
+                if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
+                    let oldPhoto = self.photos[index]
+                    let newPhoto = Photo(
+                        id: oldPhoto.id,
+                        size: oldPhoto.size,
+                        createdAt: oldPhoto.createdAt,
+                        welcomeDescription: oldPhoto.welcomeDescription,
+                        thumbImageURL: oldPhoto.thumbImageURL,
+                        largeImageURL: oldPhoto.largeImageURL,
+                        isLiked: likeResult.photo.likedByUser
+                    )
+                    self.photos[index] = newPhoto
+                    
+                    // Публикуем нотификацию об обновлении
+                    NotificationCenter.default.post(
+                        name: ImagesListService.didChangeNotification,
+                        object: self,
+                        userInfo: ["photoId": photoId]
+                    )
+                }
+                
+                completion(.success(likeResult.photo.likedByUser))
+                
+            case .failure(let error):
+                print("❌ [ImagesListService] Ошибка изменения лайка: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
+        
+        self.task = task
+        task.resume()
+    }
 
-// MARK: - DateFormatter Extension
-extension DateFormatter {
-    static let iso8601Full: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        return formatter
-    }()
+    // MARK: - Private Helpers
+    private func makeLikeRequest(photoId: String, httpMethod: String) -> URLRequest? {
+        guard let token = tokenStorage.token else {
+            print("❌ [ImagesListService] Токен не найден")
+            return nil
+        }
+        
+        guard let url = URL(string: "\(Constants.defaultBaseURLString)/photos/\(photoId)/like") else {
+            print("❌ [ImagesListService] Не удалось создать URL")
+            return nil
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
+    }
+    
+    // MARK: - Test Helpers
+#if DEBUG
+    func reset() {
+        photos = []
+        lastLoadedPage = nil
+        task = nil
+        // также можно сбросить другие внутренние состояния, если нужно
+    }
+#endif
+    
 }

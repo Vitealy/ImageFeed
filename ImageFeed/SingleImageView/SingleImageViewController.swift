@@ -1,30 +1,27 @@
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
-    var image: UIImage? {
+    
+    // MARK: - Properties
+    var imageURL: String? {
         didSet {
-            guard isViewLoaded, let image else { return }
-            imageView.image = image
-            imageView.frame.size = image.size
-            rescaleAndCenterImageInScrollView(image: image)
+            if isViewLoaded {
+                loadImage()
+            }
         }
     }
     
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var scrollView: UIScrollView!
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
-        
-        rescaleAndCenterImageInScrollView(image: image)
-        
+        loadImage()
     }
     
     override func viewDidLayoutSubviews() {
@@ -32,17 +29,34 @@ final class SingleImageViewController: UIViewController {
         centerImageIfNeeded()
     }
     
-    @IBAction private func didTapBackButton() {
-        dismiss(animated: true, completion: nil)
-    }
+    // MARK: - Private Methods
     
-    @IBAction func didTapShareButton(_ sender: UIButton) {
-        guard let image else { return }
-        let share = UIActivityViewController(
-            activityItems: [image],
-            applicationActivities: nil
-        )
-        present(share, animated: true, completion: nil)
+    private func loadImage() {
+        guard let urlString = imageURL, let url = URL(string: urlString) else {
+            // Если URL нет — можно показать плейсхолдер или сообщение
+            imageView.image = UIImage(named: "placeholder")
+            return
+        }
+        
+        // ✅ Показываем HUD перед началом загрузки
+        UIBlockingProgressHUD.show()
+        
+        // ✅ Загружаем полноразмерное изображение через Kingfisher
+        imageView.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "placeholder")
+        ) { [weak self] result in
+            // ✅ Скрываем HUD после завершения загрузки (всегда)
+            UIBlockingProgressHUD.dismiss()
+            switch result {
+            case .success(let value):
+                // После загрузки настраиваем скролл и центрирование
+                self?.imageView.frame.size = value.image.size
+                self?.rescaleAndCenterImageInScrollView(image: value.image)
+            case .failure(let error):
+                print("❌ [SingleImageViewController] Ошибка загрузки изображения: \(error.localizedDescription)")
+            }
+        }
     }
     
     private func rescaleAndCenterImageInScrollView(image: UIImage) {
@@ -56,10 +70,7 @@ final class SingleImageViewController: UIViewController {
         let scale = min(maxZoomScale, max(minZoomScale, min(hScale, vScale)))
         scrollView.setZoomScale(scale, animated: false)
         scrollView.layoutIfNeeded()
-        let newContentSize = scrollView.contentSize
-        let x = (newContentSize.width - visibleRectSize.width) / 2
-        let y = (newContentSize.height - visibleRectSize.height) / 2
-        scrollView.setContentOffset(CGPoint(x: x, y: y), animated: false)
+        centerImageIfNeeded()
     }
     
     private func centerImageIfNeeded() {
@@ -78,6 +89,22 @@ final class SingleImageViewController: UIViewController {
             right: horizontalInset
         )
     }
+    
+    // MARK: - IBActions
+    
+    @IBAction private func didTapBackButton() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    @IBAction func didTapShareButton(_ sender: UIButton) {
+        guard let image = imageView.image else { return }
+        let share = UIActivityViewController(
+            activityItems: [image],
+            applicationActivities: nil
+        )
+        present(share, animated: true, completion: nil)
+    }
+    
 }
 
 extension SingleImageViewController: UIScrollViewDelegate {
