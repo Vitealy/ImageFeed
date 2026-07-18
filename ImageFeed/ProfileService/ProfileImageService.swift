@@ -112,4 +112,11 @@ final class ProfileImageService {
         self.task = task
         task.resume()
     }
+    
+    // MARK: - Reset
+    func reset() {
+        avatarURL = nil
+        print("🗑️ [ProfileImageService] Аватарка сброшена")
+    }
+
 }

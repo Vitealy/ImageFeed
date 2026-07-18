@@ -189,6 +189,7 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        print("Выход из профиля")
+        print("❌🔚🏃🚪 [ProfileViewController] Выход из профиля")
+        ProfileLogoutService.shared.logout()
     }
 }

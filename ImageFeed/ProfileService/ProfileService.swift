@@ -104,5 +104,12 @@ final class ProfileService {
         self.task = task
         task.resume()
     }
+    
+    // MARK: - Reset
+    func reset() {
+        profile = nil
+        print("🗑️ [ProfileService] Данные профиля сброшены")
+    }
+    
 }
 

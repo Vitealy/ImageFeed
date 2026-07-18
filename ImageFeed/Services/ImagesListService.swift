@@ -199,13 +199,12 @@ final class ImagesListService {
     }
     
     // MARK: - Test Helpers
-#if DEBUG
+//#if DEBUG
     func reset() {
         photos = []
         lastLoadedPage = nil
         task = nil
-        // также можно сбросить другие внутренние состояния, если нужно
     }
-#endif
+//#endif
     
 }
