@@ -5,14 +5,12 @@ final class OAuth2TokenStorage {
     
     // MARK: - Constants
     
-    //    private let userDefaults = UserDefaults.standard
     private let tokenKey = "bearerToken"
     
     // MARK: - Properties
     
     var token: String? {
         get {
-            //            return userDefaults.string(forKey: tokenKey)
             return KeychainWrapper.standard.string(forKey: tokenKey)
         }
         set {
@@ -37,7 +35,6 @@ final class OAuth2TokenStorage {
     }
     
     func clearToken() {
-//        userDefaults.removeObject(forKey: tokenKey)
         token = nil 
     }
 }

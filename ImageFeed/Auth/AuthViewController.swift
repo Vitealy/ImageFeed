@@ -77,40 +77,11 @@ extension AuthViewController: WebViewViewControllerDelegate {
     private func handleAuthError(_ error: Error) {
         print("❌ [AuthViewController] Ошибка получения токена: \(error.localizedDescription)")
         
-//        let message: String
-//        if let networkError = error as? NetworkError {
-//            switch networkError {
-//            case .unauthorized:
-//                message = "Неверный логин или пароль. Попробуйте ещё раз."
-//            case .noData:
-//                message = "Сервер не отвечает. Проверьте подключение к интернету."
-//            default:
-//                message = "Не удалось войти в систему. Попробуйте ещё раз."
-//            }
-//        } else {
-//            message = "Не удалось войти в систему. Попробуйте ещё раз."
-//        }
-        
         let alert = UIAlertController(
             title: "Что-то пошло не так(",
             message: "Не удалось войти в систему",
             preferredStyle: .alert
         )
-        
-//        // ✅ Кнопка "Попробовать снова" — повторяет авторизацию
-//        let retryAction = UIAlertAction(title: "Попробовать снова", style: .default) { [weak self] _ in
-//            guard let self = self else { return }
-//            // Открываем WebView снова
-//            self.performSegue(withIdentifier: self.showWebViewSegueIdentifier, sender: nil)
-//        }
-//        
-//        // ✅ Кнопка "Отмена" — возвращает на SplashScreen
-//        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel) { [weak self] _ in
-//            self?.dismiss(animated: true)
-//        }
-//        
-//        alert.addAction(retryAction)
-//        alert.addAction(cancelAction)
 
         alert.addAction(UIAlertAction(title: "Ок", style: .default))
         present(alert, animated: true)

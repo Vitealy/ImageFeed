@@ -33,7 +33,7 @@ final class SingleImageViewController: UIViewController {
     
     private func loadImage() {
         guard let urlString = imageURL, let url = URL(string: urlString) else {
-            // Если URL нет — можно показать плейсхолдер или сообщение
+            // Если URL нет — показать плейсхолдер
             imageView.image = UIImage(named: "placeholder")
             return
         }

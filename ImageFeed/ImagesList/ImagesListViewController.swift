@@ -19,7 +19,7 @@ final class ImagesListViewController: UIViewController {
         
         setupTableView()
         
-        // ✅ Подписываемся на нотификацию об обновлении ленты
+        // Подписываемся на нотификацию об обновлении ленты
         imagesListServiceObserver = NotificationCenter.default
             .addObserver(
                 forName: ImagesListService.didChangeNotification,
@@ -38,7 +38,7 @@ final class ImagesListViewController: UIViewController {
                 }
             }
         
-        // ✅ Загружаем первую страницу
+        // Загружаем первую страницу
         imagesListService.fetchPhotosNextPage()
     }
     
@@ -90,7 +90,7 @@ private extension ImagesListViewController {
         // Загружаем миниатюру через Kingfisher
                 cell.cellImage.kf.setImage(
                     with: URL(string: photo.thumbImageURL),
-                    placeholder: UIImage(named: "placeholder") // Добавь плейсхолдер в Assets
+                    placeholder: UIImage(named: "placeholder") 
                 )
         
         // Форматируем дату
@@ -133,7 +133,7 @@ private extension ImagesListViewController {
         imagesListService.changeLike(photoId: photo.id, isLiked: isLiked) { [weak self] result in
             
             switch result {
-            case .success(let newIsLiked):
+            case .success(_):
                
                 DispatchQueue.main.async {
                     let indexPath = IndexPath(row: index, section: 0)
@@ -169,7 +169,7 @@ extension ImagesListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-            // ✅ Проверяем, последняя ли это ячейка
+            // Проверяем, последняя ли это ячейка
             if indexPath.row + 1 == imagesListService.photos.count {
                 imagesListService.fetchPhotosNextPage()
             }
