@@ -13,6 +13,7 @@ final class ImagesListService {
     private var task: URLSessionTask?
     private let urlSession = URLSession.shared
     private let tokenStorage = OAuth2TokenStorage()
+    private var likeTask: URLSessionTask?
     
     // MARK: - Notification
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
@@ -121,6 +122,9 @@ final class ImagesListService {
     func changeLike(photoId: String, isLiked: Bool, completion: @escaping (Result<Bool, Error>) -> Void) {
         assert(Thread.isMainThread)
         
+        // ✅ Отменяем предыдущий запрос лайка
+        likeTask?.cancel()
+        
         // Определяем метод: POST (поставить лайк) или DELETE (убрать)
         let httpMethod = isLiked ? "DELETE" : "POST"
         
@@ -134,6 +138,11 @@ final class ImagesListService {
         
         let task = urlSession.objectTask(for: request) { [weak self] (result: Result<PhotoLikeResult, Error>) in
             guard let self = self else { return }
+            
+            // ✅ Очищаем likeTask после завершения
+            DispatchQueue.main.async {
+                self.likeTask = nil
+            }
             
             switch result {
             case .success(let likeResult):

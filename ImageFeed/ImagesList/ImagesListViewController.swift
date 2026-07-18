@@ -119,6 +119,15 @@ private extension ImagesListViewController {
         let index = sender.tag
         let photo = imagesListService.photos[index]
         let isLiked = photo.isLiked
+        let newIsLiked = !isLiked
+        
+        // Блокируем кнопку, чтобы предотвратить повторные нажатия
+        sender.isEnabled = false
+        
+        // Оптимистично обновляем UI (мгновенно)
+        let newImage = newIsLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
+        sender.setImage(newImage, for: .normal)
+        sender.tintColor = newIsLiked ? .red : .white
         
         // Анимация при нажатии
         UIView.animateKeyframes(withDuration: 0.5, delay: 0, options: [], animations: {
@@ -132,9 +141,14 @@ private extension ImagesListViewController {
         
         imagesListService.changeLike(photoId: photo.id, isLiked: isLiked) { [weak self] result in
             
+            // Разблокируем кнопку после завершения запроса
+            DispatchQueue.main.async {
+                sender.isEnabled = true
+            }
+            
             switch result {
             case .success(_):
-               
+                // Всё хорошо — перезагружаем ячейку, чтобы обновить состояние
                 DispatchQueue.main.async {
                     let indexPath = IndexPath(row: index, section: 0)
                     self?.tableView.reloadRows(at: [indexPath], with: .automatic)
@@ -142,7 +156,12 @@ private extension ImagesListViewController {
                 
             case .failure(let error):
                 print("❌ [ImagesListViewController] Ошибка изменения лайка: \(error.localizedDescription)")
-                
+                // ❌ Откатываем UI обратно
+                DispatchQueue.main.async {
+                    let fallbackImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
+                    sender.setImage(fallbackImage, for: .normal)
+                    sender.tintColor = isLiked ? .red : .white
+                }
             }
         }
     }
