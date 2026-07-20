@@ -12,6 +12,13 @@ final class ImagesListViewController: UIViewController {
     
     // MARK: - Properties
     private var imagesListServiceObserver: NSObjectProtocol?
+    private lazy var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -88,21 +95,17 @@ private extension ImagesListViewController {
         let photo = imagesListService.photos[indexPath.row]
         
         // Загружаем миниатюру через Kingfisher
-                cell.cellImage.kf.setImage(
-                    with: URL(string: photo.thumbImageURL),
-                    placeholder: UIImage(named: "placeholder") 
-                )
+        cell.cellImage.kf.setImage(
+            with: URL(string: photo.thumbImageURL),
+            placeholder: UIImage(named: "placeholder")
+        )
         
         // Форматируем дату
-                if let createdAt = photo.createdAt {
-                    cell.dateLabel.text = DateFormatter.localizedString(
-                        from: createdAt,
-                        dateStyle: .long,
-                        timeStyle: .none
-                    )
-                } else {
-                    cell.dateLabel.text = ""
-                }
+        if let createdAt = photo.createdAt {
+            cell.dateLabel.text = dateFormatter.string(from: createdAt)
+        } else {
+            cell.dateLabel.text = ""
+        }
         
         // Настраиваем лайк
         let likeImage = photo.isLiked

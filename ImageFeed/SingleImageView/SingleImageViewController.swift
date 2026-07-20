@@ -34,7 +34,7 @@ final class SingleImageViewController: UIViewController {
     private func loadImage() {
         guard let urlString = imageURL, let url = URL(string: urlString) else {
             // Если URL нет — показать плейсхолдер
-            imageView.image = UIImage(named: "placeholder")
+            imageView.image = UIImage(named: "placeholder_M")
             return
         }
         
@@ -44,7 +44,7 @@ final class SingleImageViewController: UIViewController {
         // ✅ Загружаем полноразмерное изображение через Kingfisher
         imageView.kf.setImage(
             with: url,
-            placeholder: UIImage(named: "placeholder")
+            placeholder: UIImage(named: "placeholder_M")
         ) { [weak self] result in
             // ✅ Скрываем HUD после завершения загрузки (всегда)
             UIBlockingProgressHUD.dismiss()
