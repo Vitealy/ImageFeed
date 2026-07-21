@@ -60,7 +60,7 @@ final class ImagesListViewController: UIViewController {
             }
             
             let photo = imagesListService.photos[indexPath.row]
-            viewController.imageURL = photo.largeImageURL
+            viewController.imageURL = photo.largeImageURLString
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -73,17 +73,17 @@ final class ImagesListViewController: UIViewController {
     }
     
     // MARK: - Private Methods
-        private func updateTableViewAnimated() {
-            let oldCount = tableView.numberOfRows(inSection: 0)
-            let newCount = imagesListService.photos.count
-            
-            if oldCount != newCount {
-                tableView.performBatchUpdates {
-                    let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
-                    tableView.insertRows(at: indexPaths, with: .automatic)
-                } completion: { _ in }
-            }
+    private func updateTableViewAnimated() {
+        let oldCount = tableView.numberOfRows(inSection: 0)
+        let newCount = imagesListService.photos.count
+        
+        if oldCount != newCount {
+            tableView.performBatchUpdates {
+                let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            } completion: { _ in }
         }
+    }
     
 }
 
@@ -96,7 +96,7 @@ private extension ImagesListViewController {
         
         // Загружаем миниатюру через Kingfisher
         cell.cellImage.kf.setImage(
-            with: URL(string: photo.thumbImageURL),
+            with: URL(string: photo.thumbImageURLString),
             placeholder: UIImage(named: "placeholder")
         )
         
@@ -191,11 +191,11 @@ extension ImagesListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-            // Проверяем, последняя ли это ячейка
-            if indexPath.row + 1 == imagesListService.photos.count {
-                imagesListService.fetchPhotosNextPage()
-            }
+        // Проверяем, последняя ли это ячейка
+        if indexPath.row + 1 == imagesListService.photos.count {
+            imagesListService.fetchPhotosNextPage()
         }
+    }
 }
 
 // MARK: - UITableViewDataSource

@@ -25,7 +25,7 @@ final class ImagesListService {
         assert(Thread.isMainThread)
         
         // ✅ Если уже идёт загрузка — прерываем
-        if task != nil {
+        guard task == nil else {
             print("⚠️ [ImagesListService] Загрузка уже идёт, игнорируем повторный вызов")
             return
         }
@@ -46,28 +46,26 @@ final class ImagesListService {
             guard let self = self else { return }
             
             // Очищаем task после завершения (на главном потоке)
-            DispatchQueue.main.async {
-                self.task = nil
-            }
+            self.task = nil
+            
             
             switch result {
             case .success(let photoResults):
                 // Конвертируем PhotoResult → Photo
                 let newPhotos = photoResults.map { self.convertToPhoto(from: $0) }
                 
-                // ✅ Обновляем массив и lastLoadedPage на главном потоке
-                DispatchQueue.main.async {
-                    self.photos.append(contentsOf: newPhotos)
-                    self.lastLoadedPage = nextPage
-                    
-                    // ✅ Публикуем нотификацию
-                    NotificationCenter.default.post(
-                        name: ImagesListService.didChangeNotification,
-                        object: self,
-                        userInfo: ["photos": self.photos]
-                    )
-                    print("✅ [ImagesListService] Загружена страница \(nextPage), всего фото: \(self.photos.count)")
-                }
+                // ✅ Обновляем массив и lastLoadedPage
+                self.photos.append(contentsOf: newPhotos)
+                self.lastLoadedPage = nextPage
+                
+                // ✅ Публикуем нотификацию
+                NotificationCenter.default.post(
+                    name: ImagesListService.didChangeNotification,
+                    object: self,
+                    userInfo: ["photos": self.photos]
+                )
+                print("✅ [ImagesListService] Загружена страница \(nextPage), всего фото: \(self.photos.count)")
+                
                 
             case .failure(let error):
                 print("❌ [ImagesListService] Ошибка загрузки страницы \(nextPage): \(error.localizedDescription)")
@@ -98,7 +96,7 @@ final class ImagesListService {
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = HTTPMethod.get.rawValue
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
@@ -112,8 +110,8 @@ final class ImagesListService {
             size: size,
             createdAt: createdAt,
             welcomeDescription: result.description,
-            thumbImageURL: result.urls.thumb,
-            largeImageURL: result.urls.full,
+            thumbImageURLString: result.urls.thumb,
+            largeImageURLString: result.urls.full,
             isLiked: result.likedByUser
         )
     }
@@ -126,7 +124,7 @@ final class ImagesListService {
         likeTask?.cancel()
         
         // Определяем метод: POST (поставить лайк) или DELETE (убрать)
-        let httpMethod = isLiked ? "DELETE" : "POST"
+        let httpMethod = isLiked ? HTTPMethod.delete.rawValue : HTTPMethod.post.rawValue
         
         guard let request = makeLikeRequest(photoId: photoId, httpMethod: httpMethod) else {
             print("❌ [ImagesListService] Не удалось создать запрос для изменения лайка")
@@ -140,9 +138,7 @@ final class ImagesListService {
             guard let self = self else { return }
             
             // ✅ Очищаем likeTask после завершения
-            DispatchQueue.main.async {
-                self.likeTask = nil
-            }
+            self.likeTask = nil
             
             switch result {
             case .success(let likeResult):
@@ -154,8 +150,8 @@ final class ImagesListService {
                         size: oldPhoto.size,
                         createdAt: oldPhoto.createdAt,
                         welcomeDescription: oldPhoto.welcomeDescription,
-                        thumbImageURL: oldPhoto.thumbImageURL,
-                        largeImageURL: oldPhoto.largeImageURL,
+                        thumbImageURLString: oldPhoto.thumbImageURLString,
+                        largeImageURLString: oldPhoto.largeImageURLString,
                         isLiked: likeResult.photo.likedByUser
                     )
                     self.photos[index] = newPhoto
@@ -179,7 +175,7 @@ final class ImagesListService {
         self.task = task
         task.resume()
     }
-
+    
     // MARK: - Private Helpers
     private func makeLikeRequest(photoId: String, httpMethod: String) -> URLRequest? {
         guard let token = tokenStorage.token else {
@@ -199,12 +195,11 @@ final class ImagesListService {
     }
     
     // MARK: - Test Helpers
-//#if DEBUG
+    
     func reset() {
         photos = []
         lastLoadedPage = nil
         task = nil
     }
-//#endif
     
 }

@@ -150,11 +150,11 @@ final class ProfileViewController: UIViewController {
             return
         }
         
-            self.nameLabel.text = profile.name
-            self.loginNameLabel.text = profile.loginName
-            self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
-            
-            self.updateAvatar()
+        self.nameLabel.text = profile.name
+        self.loginNameLabel.text = profile.loginName
+        self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
+        
+        self.updateAvatar()
     }
     
     private func updateAvatar() {
@@ -168,7 +168,7 @@ final class ProfileViewController: UIViewController {
     }
     
     private func loadAvatar(from url: URL) {
-
+        
         profileImageView.kf.setImage(
             with: url,
             placeholder: UIImage(named: "tab_profile_active"),
@@ -211,7 +211,5 @@ final class ProfileViewController: UIViewController {
         // Показываем алерт
         present(alert, animated: true, completion: nil)
         
-//        print("❌🔚🏃🚪 [ProfileViewController] Выход из профиля")
-//        ProfileLogoutService.shared.logout()
     }
 }
