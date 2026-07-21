@@ -163,6 +163,8 @@ final class ImagesListService {
                         userInfo: ["photoId": photoId]
                     )
                 }
+                let message = likeResult.photo.likedByUser ? "❤️ Лайк поставлен" : "🤍 Лайк убран"
+                print("✅ [ImagesListService] \(message) для фото \(photoId)")
                 
                 completion(.success(likeResult.photo.likedByUser))
                 
@@ -172,7 +174,7 @@ final class ImagesListService {
             }
         }
         
-        self.task = task
+        self.likeTask = task
         task.resume()
     }
     
@@ -200,6 +202,7 @@ final class ImagesListService {
         photos = []
         lastLoadedPage = nil
         task = nil
+        likeTask = nil
     }
     
 }
