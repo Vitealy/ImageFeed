@@ -152,7 +152,14 @@ final class ProfileViewController: UIViewController {
         
         self.nameLabel.text = profile.name
         self.loginNameLabel.text = profile.loginName
-        self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
+        
+        if let bio = profile.bio, !bio.isEmpty {
+            self.descriptionLabel.text = bio
+            self.descriptionLabel.isHidden = false
+        } else {
+            self.descriptionLabel.text = ""
+            self.descriptionLabel.isHidden = true
+        }
         
         self.updateAvatar()
     }
