@@ -150,7 +150,7 @@ private extension ImagesListViewController {
             }
             
             switch result {
-            case .success(_):
+            case .success:
                 // Всё хорошо — перезагружаем ячейку, чтобы обновить состояние
                 DispatchQueue.main.async {
                     let indexPath = IndexPath(row: index, section: 0)
