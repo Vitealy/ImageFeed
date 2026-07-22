@@ -48,7 +48,7 @@ final class ProfileImageService {
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = HTTPMethod.get.rawValue
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
@@ -112,4 +112,11 @@ final class ProfileImageService {
         self.task = task
         task.resume()
     }
+    
+    // MARK: - Reset
+    func reset() {
+        avatarURL = nil
+        print("🗑️ [ProfileImageService] Аватарка сброшена")
+    }
+    
 }

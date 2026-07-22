@@ -37,7 +37,7 @@ final class OAuth2Service {
         }
         
         var request = URLRequest(url: authTokenUrl)
-        request.httpMethod = "POST"
+        request.httpMethod = HTTPMethod.post.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         return request
     }
@@ -47,7 +47,7 @@ final class OAuth2Service {
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         assert(Thread.isMainThread) // Проверяем, что мы на главном потоке
-
+        
         // ✅ Если уже есть задача с таким же кодом — игнорируем
         if task != nil && lastCode == code {
             print("⚠️ [OAuth2Service] Запрос с таким кодом уже выполняется, игнорируем повторный вызов")

@@ -59,7 +59,7 @@ final class ProfileService {
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = HTTPMethod.get.rawValue
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
     }
@@ -104,5 +104,12 @@ final class ProfileService {
         self.task = task
         task.resume()
     }
+    
+    // MARK: - Reset
+    func reset() {
+        profile = nil
+        print("🗑️ [ProfileService] Данные профиля сброшены")
+    }
+    
 }
 

@@ -150,11 +150,11 @@ final class ProfileViewController: UIViewController {
             return
         }
         
-            self.nameLabel.text = profile.name
-            self.loginNameLabel.text = profile.loginName
-            self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
-            
-            self.updateAvatar()
+        self.nameLabel.text = profile.name
+        self.loginNameLabel.text = profile.loginName
+        self.descriptionLabel.text = profile.bio ?? "Описание отсутствует"
+        
+        self.updateAvatar()
     }
     
     private func updateAvatar() {
@@ -168,7 +168,7 @@ final class ProfileViewController: UIViewController {
     }
     
     private func loadAvatar(from url: URL) {
-
+        
         profileImageView.kf.setImage(
             with: url,
             placeholder: UIImage(named: "tab_profile_active"),
@@ -189,6 +189,27 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        print("Выход из профиля")
+        
+        let alert = UIAlertController(
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти?",
+            preferredStyle: .alert
+        )
+        
+        // Кнопка "Да" — выполняем выход
+        let yesAction = UIAlertAction(title: "Да", style: .destructive) { _ in
+            print("❌🔚🏃🚪 [ProfileViewController] Выход из профиля")
+            ProfileLogoutService.shared.logout()
+        }
+        
+        // Кнопка "Нет" — просто закрываем алерт
+        let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        
+        alert.addAction(yesAction)
+        alert.addAction(noAction)
+        
+        // Показываем алерт
+        present(alert, animated: true, completion: nil)
+        
     }
 }

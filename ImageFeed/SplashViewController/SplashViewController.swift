@@ -70,16 +70,15 @@ final class SplashViewController: UIViewController {
     }
     
     private func fetchProfile(token: String) {
+        
         UIBlockingProgressHUD.show()
         
         profileService.fetchProfile(token) { [weak self] result in
-            
             guard let self = self else { return }
             
             switch result {
             case .success(let profile):
                 print("✅ [SplashViewController] Профиль успешно загружен: \(profile.name)")
-                //                self.fetchProfileImage(username: profile.username) {
                 self.profileImageService.fetchProfileImageURL(username: profile.username) { _ in
                     UIBlockingProgressHUD.dismiss()
                     self.switchToTabBarController()

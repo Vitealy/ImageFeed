@@ -72,7 +72,7 @@ final class WebViewViewController: UIViewController {
         let request = URLRequest(url: url)
         webView.load(request)
     }
-     
+    
 }
 
 // MARK: - Extension
@@ -91,7 +91,7 @@ extension WebViewViewController: WKNavigationDelegate {
     }
     
     private func code(from navigationAction: WKNavigationAction) -> String? {
-       
+        
         if
             let url = navigationAction.request.url,
             let urlComponents = URLComponents(string: url.absoluteString),
