@@ -16,7 +16,7 @@ struct AuthConfiguration {
     let accessScope: String
     let defaultBaseURLString: String
     let authURLString: String
-
+    
     static var standard: AuthConfiguration {
         return AuthConfiguration(
             accessKey: Constants.accessKey,

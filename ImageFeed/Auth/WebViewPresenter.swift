@@ -13,8 +13,8 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     private let authHelper: AuthHelperProtocol
     
     init(authHelper: AuthHelperProtocol) {
-            self.authHelper = authHelper
-        }
+        self.authHelper = authHelper
+    }
     
     func viewDidLoad() {
         guard let request = authHelper.authRequest() else {
@@ -47,19 +47,12 @@ final class WebViewPresenter: WebViewPresenterProtocol {
         let shouldHideProgress = shouldHideProgress(for: newProgressValue)
         view?.setProgressHidden(shouldHideProgress)
     }
-
+    
     func shouldHideProgress(for value: Float) -> Bool {
         abs(value - 1.0) <= 0.0001
     }
     
     func code(from url: URL) -> String? {
         authHelper.code(from: url)
-//        if let urlComponents = URLComponents(string: url.absoluteString),
-//           urlComponents.path == "/oauth/authorize/native",
-//           let items = urlComponents.queryItems,
-//           let codeItem = items.first(where: { $0.name == "code" }) {
-//            return codeItem.value
-//        }
-//        return nil
     }
 }

@@ -7,16 +7,16 @@ protocol AuthHelperProtocol {
 
 final class AuthHelper: AuthHelperProtocol {
     let configuration: AuthConfiguration
-
+    
     init(configuration: AuthConfiguration = .standard) {
         self.configuration = configuration
     }
-
+    
     func authRequest() -> URLRequest? {
         guard let url = authURL() else { return nil }
         return URLRequest(url: url)
     }
-
+    
     func authURL() -> URL? {
         guard var urlComponents = URLComponents(string: configuration.authURLString) else {
             print("❌ [AuthHelper] Не удалось создать URLComponents из \(configuration.authURLString)")
@@ -31,7 +31,7 @@ final class AuthHelper: AuthHelperProtocol {
         print("✅ [AuthHelper] Сгенерирован URL: \(urlComponents.url?.absoluteString ?? "nil")")
         return urlComponents.url
     }
-
+    
     func code(from url: URL) -> String? {
         if let urlComponents = URLComponents(string: url.absoluteString),
            urlComponents.path == "/oauth/authorize/native",
