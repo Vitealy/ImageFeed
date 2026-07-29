@@ -205,4 +205,10 @@ final class ImagesListService {
         likeTask = nil
     }
     
+#if DEBUG
+func setPhotosForTesting(_ photos: [Photo]) {
+    self.photos = photos
+}
+#endif
+    
 }

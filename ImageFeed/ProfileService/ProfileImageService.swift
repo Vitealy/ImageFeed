@@ -36,7 +36,7 @@ final class ProfileImageService {
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     private let tokenStorage = OAuth2TokenStorage()
-    private(set) var avatarURL: String?
+    internal(set) var avatarURL: String?
     
     // MARK: - Private Methods
     
@@ -119,4 +119,9 @@ final class ProfileImageService {
         print("🗑️ [ProfileImageService] Аватарка сброшена")
     }
     
+#if DEBUG
+func setAvatarURLForTesting(_ url: String?) {
+    avatarURL = url
+}
+#endif
 }
