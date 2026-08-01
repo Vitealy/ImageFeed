@@ -8,6 +8,7 @@ enum NetworkError: Error, LocalizedError {
     case invalidRequest
     case noData
     case unauthorized
+    case cancelled
     
     var errorDescription: String? {
         switch self {
@@ -23,6 +24,8 @@ enum NetworkError: Error, LocalizedError {
             return "Данные не получены"
         case .unauthorized:
             return "Не авторизован"
+        case .cancelled:
+            return "Запрос был отменён"
         }
     }
 }
@@ -56,9 +59,13 @@ extension URLSession {
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
             } else if let error = error {
-                // Ошибка сети
-                print("❌ [URLSession] Сетевая ошибка: \(error.localizedDescription) для запроса \(request.url?.absoluteString ?? "")")
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
+                // Ошибка сети, Проверяем, является ли ошибка отменой
+                if (error as? URLError)?.code == .cancelled {
+                    fulfillCompletionOnTheMainThread(.failure(NetworkError.cancelled))
+                } else {
+                    print("❌ [URLSession] Сетевая ошибка: \(error.localizedDescription) для запроса \(request.url?.absoluteString ?? "")")
+                    fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
+                }
             } else {
                 // Неизвестная ошибка
                 print("❌ [URLSession] Неизвестная ошибка: данные и ответ отсутствуют для запроса \(request.url?.absoluteString ?? "")")

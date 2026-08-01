@@ -86,6 +86,10 @@ final class SplashViewController: UIViewController {
                 
             case .failure(let error):
                 UIBlockingProgressHUD.dismiss()
+                if let networkError = error as? NetworkError, case .cancelled = networkError {
+                    print("ℹ️ [SplashViewController] Запрос был отменён (повторный вызов), игнорируем")
+                    return
+                }
                 print("❌ [SplashViewController] Ошибка загрузки профиля: \(error.localizedDescription)")
                 self.showErrorAlert(message: "Не удалось загрузить профиль. Проверьте подключение к интернету.")
             }
