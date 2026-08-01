@@ -47,6 +47,7 @@ final class ProfileViewController: UIViewController, ProfileViewProtocol {
         // MARK: - Avatar image
         
         profileImageView = UIImageView()
+        profileImageView.accessibilityIdentifier = "ProfileAvatarImage"
         profileImageView = UIImageView(image: UIImage(named: "tab_profile_active"))
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
         profileImageView.contentMode = .scaleAspectFill
@@ -57,6 +58,7 @@ final class ProfileViewController: UIViewController, ProfileViewProtocol {
         // MARK: - Name Label
         
         nameLabel = UILabel()
+        nameLabel.accessibilityIdentifier = "ProfileNameLabel"
         nameLabel.text = "Загрузка..."
         nameLabel.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         nameLabel.textColor = .ypWhite
@@ -66,6 +68,7 @@ final class ProfileViewController: UIViewController, ProfileViewProtocol {
         // MARK: - Login Name Label
         
         loginNameLabel = UILabel()
+        loginNameLabel.accessibilityIdentifier = "ProfileUsernameLabel"
         loginNameLabel.text = "Загрузка..."
         loginNameLabel.font  = UIFont.systemFont(ofSize: 13, weight: .regular)
         loginNameLabel.textColor = .ypGray
@@ -75,6 +78,7 @@ final class ProfileViewController: UIViewController, ProfileViewProtocol {
         // MARK: - Description Label
         
         descriptionLabel = UILabel()
+        descriptionLabel.accessibilityIdentifier = "ProfileDescriptionLabel"
         descriptionLabel.text = "Загрузка..."
         descriptionLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         descriptionLabel.textColor = .ypWhite
@@ -84,6 +88,7 @@ final class ProfileViewController: UIViewController, ProfileViewProtocol {
         // MARK: - Logout Button
         
         logoutButton = UIButton(type: .system)
+        logoutButton.accessibilityIdentifier = "logoutButton"
         let logoutImage = UIImage(systemName: "ipad.and.arrow.forward")
         logoutButton.setImage(logoutImage, for: .normal)
         logoutButton.tintColor = .ypRed

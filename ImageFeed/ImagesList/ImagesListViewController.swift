@@ -105,6 +105,7 @@ final class ImagesListViewController: UIViewController, ImagesListViewProtocol {
         ? UIImage(named: "like_button_on")
         : UIImage(named: "like_button_off")
         cell.likeButton.setImage(likeImage, for: .normal)
+        cell.likeButton.accessibilityValue = photo.isLiked ? "liked" : "unliked"
         
         // Сохраняем id фото для обработки лайка
         cell.likeButton.tag = indexPath.row
@@ -124,6 +125,7 @@ final class ImagesListViewController: UIViewController, ImagesListViewProtocol {
         let newImage = newIsLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         sender.setImage(newImage, for: .normal)
         sender.tintColor = newIsLiked ? .red : .white
+        sender.accessibilityValue = newIsLiked ? "liked" : "unliked"
         
         // Анимация при нажатии
         UIView.animateKeyframes(withDuration: 0.5, delay: 0, options: [], animations: {
@@ -150,6 +152,7 @@ final class ImagesListViewController: UIViewController, ImagesListViewProtocol {
                 let fallbackImage = photo.isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
                 sender.setImage(fallbackImage, for: .normal)
                 sender.tintColor = photo.isLiked ? .red : .white
+                sender.accessibilityValue = photo.isLiked ? "liked" : "unliked"
             }
         }
     }
